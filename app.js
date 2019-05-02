@@ -21,37 +21,34 @@ app.get('/users', async (req, res) => {
     let users = getUsers();
 
     if (users === null) {
-        return res.status(400).json({message: 'Error getting users'});
+        return res.status(400).json({message: 'Error loading users'});
     }
 
     let allUsers = users.length;
     let newUsers = 10;
     const url = 'https://randomuser.me/api';
 
-    for (let i = 0; i < allUsers + newUsers; i++) {
-        try {
-            axios.get(url).then(response => {
-                const data = response.data.results[0];
-                let user = {
-                    gender: data.gender,
-                    firstname: data.name.first,
-                    city: data.location.city,
-                    email: data.email,
-                    cell: data.cell
-                };
+    for (let i = 0; i < newUsers; i++) {
+        axios.get(url).then(response => {
+            const data = response.data.results[0];
+            let user = {
+                gender: data.gender,
+                firstname: data.name.first,
+                city: data.location.city,
+                email: data.email,
+                cell: data.cell
+            };
 
-                users.push(user);
+            users.push(user);
 
-                if (users.length === allUsers + newUsers) {
-                    if (!saveUsers(users))
-                        return res.status(400).json({message: 'Error saving user'});
-
-                    return res.status(200).send(users);
-                }
-            });
-        } catch (err) {
+            if (users.length === allUsers + newUsers) {
+                if (!saveUsers(users))
+                    return res.status(400).json({message: 'Error saving user'});
+                return res.status(200).send(users);
+            }
+        }).catch(err => {
             return res.status(400).json({message: 'Error getting users'});
-        }
+        });
     }
 });
 
